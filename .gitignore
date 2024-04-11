@@ -1,2 +1,4 @@
 _data/*
 _data
+.vscode/
+.DS_Store
