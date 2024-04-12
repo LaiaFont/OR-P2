@@ -1,20 +1,22 @@
 {
     "ocrnet": [
-        {"pretrained": "ade", "aAcc": 85.19, "mDice": 8.24, "mAcc": 9.31, "data_time": 0.03360865709077509, "time": 0.08695624838221258, "step": 1},
-        {"pretrained": "ade", "aAcc": 89.88, "mDice": 9.76, "mAcc": 9.08, "data_time": 0.01757607447679337, "time": 0.07124886829550663, "step": 2},
-        {"backbone": "H", "pretrained": "cityscapes", "aAcc": 88.52, "mDice": 6.96, "mAcc": 6.85, "data_time": 0.03255971108075868, "time": 0.13740225200620135, "step": 1},
-        {"backbone": "H", "pretrained": "cityscapes", "aAcc": 89.25, "mDice": 7.23, "mAcc": 6.72, "data_time": 0.04649519138648862, "time": 0.16471961328343546, "step": 2},
-        {"backbone": "Resnet", "pretrained": "cityscapes", "aAcc": 87.84, "mDice": 8.88, "mAcc": 9.09, "data_time": 0.03288097764543919, "time": 0.0972225908994263, "step": 1},
-        {"backbone": "Resnet", "pretrained": "cityscapes", "aAcc": 84.9, "mDice": 7.82, "mAcc": 7.97, "data_time": 0.01844667791805975, "time": 0.06262372751704982, "step": 2}
+        {"network": "OCRNet", "backbone": "HRNet", "pretrained": "ade", "aAcc": 85.19, "mDice": 8.24, "mAcc": 9.31, "data_time": 0.03360865709077509, "time": 0.08695624838221258, "step": 1},
+        {"network": "OCRNet", "backbone": "HRNet", "pretrained": "ade", "aAcc": 89.88, "mDice": 9.76, "mAcc": 9.08, "data_time": 0.01757607447679337, "time": 0.07124886829550663, "step": 2},
+        {"network": "OCRNet", "backbone": "HRNet", "pretrained": "cityscapes", "aAcc": 88.52, "mDice": 6.96, "mAcc": 6.85, "data_time": 0.03255971108075868, "time": 0.13740225200620135, "step": 1},
+        {"network": "OCRNet", "backbone": "HRNet", "pretrained": "cityscapes", "aAcc": 89.25, "mDice": 7.23, "mAcc": 6.72, "data_time": 0.04649519138648862, "time": 0.16471961328343546, "step": 2},
+        {"network": "OCRNet", "backbone": "Resnet", "pretrained": "cityscapes", "aAcc": 87.84, "mDice": 8.88, "mAcc": 9.09, "data_time": 0.03288097764543919, "time": 0.0972225908994263, "step": 1},
+        {"network": "OCRNet", "backbone": "Resnet", "pretrained": "cityscapes", "aAcc": 84.9, "mDice": 7.82, "mAcc": 7.97, "data_time": 0.01844667791805975, "time": 0.06262372751704982, "step": 2}
     ],
     "point_rend": [
-        {"pretrained": "ade", "aAcc": 92.15, "mDice": 15.03, "mAcc": 13.84, "data_time": 0.0189, "time": 0.0413, "step": 1},
-        {"pretrained": "ade", "aAcc": 92.87, "mDice": 20.35, "mAcc": 18.36, "data_time": 0.0156, "time": 0.0379, "step": 2}
+        {"network": "PointRend", "pretrained": "ade", "aAcc": 91.11, "mDice": 12.1, "mAcc": 11.72, "data_time": 0.018081111611479923, "time": 0.054525840467739596, "step": 1},
+        {"network": "PointRend", "pretrained": "ade", "aAcc": 91.82, "mDice": 14.12, "mAcc": 13.3, "data_time": 0.01650944879283362, "time": 0.053081909061198196, "step": 2},
+        {"network": "PointRend", "pretrained": "cityscapes", "aAcc": 91.08, "mDice": 11.99, "mAcc": 11.79, "data_time": 0.03795586472348228, "time": 0.10557178759204291, "step": 1},
+        {"network": "PointRend", "pretrained": "cityscapes", "aAcc": 91.97, "mDice": 14.36, "mAcc": 13.66, "data_time": 0.03277816455666622, "time": 0.06877819230784826, "step": 2}
     ],
     "dmnet": [
-        {"pretrained": "cityscapes", "aAcc": 87.99, "mDice": 7.59, "mAcc": 8.01, "data_time": 0.025443131853673535, "time": 0.08301020450954405, "step": 1},
-        {"pretrained": "cityscapes", "aAcc": 89.5, "mDice": 8.96, "mAcc": 8.01, "data_time": 0.015284314455916081, "time": 0.03753224645224597, "step": 2},
-        {"pretrained": "ade", "aAcc": 89.04, "mDice": 7.97, "mAcc": 8.12, "data_time": 0.021516354178723482, "time": 0.0778531122289997, "step": 1},
-        {"pretrained": "ade", "aAcc": 89.38, "mDice": 7.58, "mAcc": 6.88, "data_time": 0.015755720031580295, "time": 0.038073471437969325, "step": 2}
+        {"network": "DMNet", "pretrained": "cityscapes", "aAcc": 87.99, "mDice": 7.59, "mAcc": 8.01, "data_time": 0.025443131853673535, "time": 0.08301020450954405, "step": 1},
+        {"network": "DMNet", "pretrained": "cityscapes", "aAcc": 89.5, "mDice": 8.96, "mAcc": 8.01, "data_time": 0.015284314455916081, "time": 0.03753224645224597, "step": 2},
+        {"network": "DMNet", "pretrained": "ade", "aAcc": 89.04, "mDice": 7.97, "mAcc": 8.12, "data_time": 0.021516354178723482, "time": 0.0778531122289997, "step": 1},
+        {"network": "DMNet", "pretrained": "ade", "aAcc": 89.38, "mDice": 7.58, "mAcc": 6.88, "data_time": 0.015755720031580295, "time": 0.038073471437969325, "step": 2}
     ]
 }
