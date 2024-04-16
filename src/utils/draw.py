@@ -41,14 +41,19 @@ def generate_palette(num_classes, seed=42):
     return palette
 
 
+# Plot Fashinpedia image and segmentation mask
 def plot_seg_image(img_id, palette, classes, fashion_dir, annotations_dir, dir="train/"):
     """Plot the original image and its segmentation mask."""
-    
     
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
     # Read and plot original image 
+    if img_id.endswith(".jpg"):
+        img_id = img_id[:-4]
+    
     img = mmcv.imread(fashion_dir + f'{dir}{img_id}.jpg')
+    
+    
     ax[0].imshow(mmcv.bgr2rgb(img))
 
     # Plot segmentation mask
@@ -85,13 +90,50 @@ def plot_seg_image(img_id, palette, classes, fashion_dir, annotations_dir, dir="
     fig.tight_layout()
 
 
-def imshow(img, title="", ax=None):
+# Plot VOC image and segmentation mask
+def plot_voc_seg(img_id, voc_img_dir, voc_seg_dir, bboxes=None, title=None):
+    """Plot a PASCAL VOC image with its segmentation and bounding boxes.
+    
+    Args:
+    - img_id: str, image id
+    - voc_img_dir: str, path to the folder containing the images
+    - voc_seg_dir: str, path to the folder containing the segmentation masks
+    - bboxes: list of lists, bounding boxes coordinates
+    """
+    
+    
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Read image and segmentation
+    img = cv2.imread(voc_img_dir + img_id + '.jpg')
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_seg = cv2.imread(voc_seg_dir + img_id + ".png" )
+
+    ax[0].imshow(img)
+    ax[1].imshow(img_seg)
+
+    # Draw bounding box: create a Rectangle patch for each bbox
+    if bboxes is not None:
+        for bbox in bboxes:
+            rect = patches.Rectangle(bbox[:2], bbox[2]-bbox[0], bbox[3]-bbox[1], linewidth=0.5, edgecolor='r', facecolor='none')
+            ax[0].add_patch(rect)
+    
+    if title is not None:
+        fig.suptitle(title, y=0.85)
+    
+    return img, img_seg
+
+
+def imshow(img, title="", ax=None, axis_off=True):
     """Display an image with a title."""
     if ax is None:
         fig, ax = plt.subplots()
         
     ax.imshow(img)
     ax.set_title(title)
+    
+    if axis_off:
+        ax.axis('off')
 
 
 def imshow_many(imgs, axis_off=True, cols=1, rows=1):
@@ -152,35 +194,3 @@ def filter_color(img, color=None, background=[0, 0, 0], filter_color=None):
     
     return img
 
-
-def plot_voc_seg(img_id, voc_img_dir, voc_seg_dir, bboxes=None, title=None):
-    """Plot a PASCAL VOC image with its segmentation and bounding boxes.
-    
-    Args:
-    - img_id: str, image id
-    - voc_img_dir: str, path to the folder containing the images
-    - voc_seg_dir: str, path to the folder containing the segmentation masks
-    - bboxes: list of lists, bounding boxes coordinates
-    """
-    
-    
-    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-
-    # Read image and segmentation
-    img = cv2.imread(voc_img_dir + img_id + '.jpg')
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_seg = cv2.imread(voc_seg_dir + img_id + ".png" )
-
-    ax[0].imshow(img)
-    ax[1].imshow(img_seg)
-
-    # Draw bounding box: create a Rectangle patch for each bbox
-    if bboxes is not None:
-        for bbox in bboxes:
-            rect = patches.Rectangle(bbox[:2], bbox[2]-bbox[0], bbox[3]-bbox[1], linewidth=0.5, edgecolor='r', facecolor='none')
-            ax[0].add_patch(rect)
-    
-    if title is not None:
-        fig.suptitle(title, y=0.85)
-    
-    return img, img_seg
