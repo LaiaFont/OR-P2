@@ -9,6 +9,27 @@ import json
 import pandas as pd
 import shutil
 
+
+# Read JSON annotations
+def read_annotations(anno_file):
+    """Read annotations from json file and return a DataFrame with annotations and images info."""
+
+    with open(anno_file) as json_data:
+        data = json.load(json_data)
+        categories = pd.DataFrame(data['categories'])
+        df_img = pd.DataFrame(data['images'])
+        annotations = pd.DataFrame(data['annotations'])
+    
+    df_annot = pd.merge(annotations, df_img, left_on='image_id', right_on='id', how='outer')
+    df_annot.drop(columns=['id_x', 'id_y', 'license', 'time_captured', 'isstatic', 'original_url', 'iscrowd', 'kaggle_id'], inplace=True)
+    
+    # Compute img area and area ratio
+    df_annot["img_area"] = df_annot["height"] * df_annot["width"]
+    df_annot['area_ratio'] = df_annot['area'] / df_annot['img_area']
+    
+    return df_annot, categories, df_img, annotations
+
+
 # Read and format data (extracted from given base notebook)
 def read_voc_xml(xml_file: str, voc_classes: dict):
     """Function to read XML file and return the list of objects and their bounding boxes."""
@@ -78,7 +99,6 @@ def get_random_voc_img(voc_img_dir, voc_seg_dir, plot_true=False):
     return get_voc_img(voc_id, voc_img_dir, voc_seg_dir, plot_true)
     
 
-
 def get_fashion_img_seg(img_id, img_dir, seg_dir, plot=False):
     """
     segment.png = '9f98c5425e9f04d3c7def0bb2af2771d_seg.png'
@@ -108,16 +128,6 @@ def get_fashion_img_seg(img_id, img_dir, seg_dir, plot=False):
     
     return image, segment
     
-    
-
-
-
-
-
-
-
-
-
 
 # Save data to json file
 def save_json(filepath, data):
@@ -126,44 +136,69 @@ def save_json(filepath, data):
         json.dump(data, f)
 
 
-
+# Get the directory size
 def get_dir_size(dir_path):
     """Get directory size"""
     return subprocess.check_output(['du','-sh', dir_path]).split()[0].decode('utf-8')
 
 
-def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000):
+# Reduce data to N images or list of categories, create new json file and folder
+def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000, categories=None):
     """Reduce data to N images and save to new json file and folder"""
 
-    print(f"Reducing data to {n_choice} images...")
-    print(f"Original Image-dir size: {get_dir_size(img_dir)} ({img_dir})")
-    
     # Load json file
     # data.keys() => dict_keys(['annotations', 'images', 'info', 'licenses', 'categories', 'attributes'])
     print(f"Original JSON file size: {os.path.getsize(json_file)/(1024**2):.2f}MB ({json_file})")
     with open(json_file) as json_data:
-        data = json.load(json_data)
-
+        data = json.load(json_data)   
+    
+    
     # Get image/annotations data and remove unnecessary columns and parse to DataFrame
     df_annots = pd.DataFrame(data['annotations'])
     df_images = pd.DataFrame(data['images'])[['id', 'width', 'height', 'file_name']]
+    
+    if categories is not None:
+        print(f"Filtering data to {len(categories)} categories")
+        
+        # Create new dataframes with selected categories
+        df_annots_new = df_annots[df_annots.category_id.isin(categories)]
+        img_choice = df_annots_new.image_id.unique()
+        n_choice = len(img_choice)
+        
+        df_images_new = df_images[df_images.id.isin(img_choice)]
+           
+    else:
+    
+        # Get unique image and category IDs
+        unique_imgs = np.unique(df_images.id)
+        # unique_cats = np.unique(df_annots.category_id)
 
-    # Get unique image and category IDs
-    unique_imgs = np.unique(df_images.id)
-    # unique_cats = np.unique(df_annots.category_id)
+        # Randomly select N images
+        img_choice = np.random.choice(unique_imgs, n_choice, replace=False)
+          
+        # Filter data
+        df_annots_new = df_annots[df_annots.image_id.isin(img_choice)]
+        df_images_new = df_images[df_images.id.isin(img_choice)]
 
-    # Randomly select N images
-    img_choice = np.random.choice(unique_imgs, n_choice, replace=False)
-
-    # Filter data
-    df_annots_new = df_annots[df_annots.image_id.isin(img_choice)]
-    df_images_new = df_images[df_images.id.isin(img_choice)]
+    
+    print(f"Reducing data to {n_choice} images...")
+    print(f"Original Image-dir size: {get_dir_size(img_dir)} ({img_dir})")
+    print(f"Original num. images: {df_images.shape[0]}")
+    print(f"Original Annotations: {df_annots.shape[0]}")
+    
+    print(f"New num. images: {df_images_new.shape[0]}")
+    print(f"New Annotations: {df_annots_new.shape[0]}")
+    
 
     # Create new data dictionary
     new_data = {}
     new_data["annotations"] = df_annots_new.to_dict(orient='records')
     new_data["images"] = df_images_new.to_dict(orient='records')
-    new_data["categories"] = data["categories"]
+    
+    if categories is not None:
+        new_data["categories"] = [cat for cat in data["categories"] if np.isin(cat["id"], categories).sum()]
+    else:
+        new_data["categories"] = data["categories"]
 
     # Copy images to new folder
     os.makedirs(new_img_dir, exist_ok=True)
@@ -185,7 +220,10 @@ def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000):
     print(f"New JSON file size: {os.path.getsize(new_json_file)/(1024**2):.2f}MB ({new_json_file})")
 
 
-def generate_masked_imgs(fp, save_dir, palette, d3=True, n_images=None):
+# Create a masks (PNG) for each category
+def generate_masked_imgs(fp, save_dir, palette, convert_3D=True, n_images=None):
+    """Generate segmentation masks for each category in the dataset."""
+    
     
     im_ids = fp.getImgIds()
     if n_images is not None:
@@ -228,7 +266,7 @@ def generate_masked_imgs(fp, save_dir, palette, d3=True, n_images=None):
                 mask = mask*(1-mm) + m
 
         # Convert the mask to 3D if needed
-        if d3:
+        if convert_3D:
             mask3d = np.zeros(shape=(*mask.shape, 3), dtype=np.uint8)
             for cat in np.unique(mask):
                 mask3d[mask == cat] = palette[cat]
@@ -244,4 +282,6 @@ def generate_masked_imgs(fp, save_dir, palette, d3=True, n_images=None):
         if counter % 1000 == 0:
             print(f'{counter} images processed.')
 
+        
+    print(f'Finished! {counter} images processed.')
   
