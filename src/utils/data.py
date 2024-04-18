@@ -200,6 +200,11 @@ def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000, c
     else:
         new_data["categories"] = data["categories"]
 
+    # Save image file_name in txt file
+    train_or_val = 'train' if 'train' in new_img_dir else 'val'
+    df_images_new['file_name'] = df_images_new['file_name'].apply(lambda x: os.path.splitext(x)[0])
+    df_images_new['file_name'].to_csv(f'../_data/fashionpedia/reduced_{train_or_val}_files.txt', sep='\t', index=False, header=False)
+    
     # Copy images to new folder
     os.makedirs(new_img_dir, exist_ok=True)
     print("Copying images to new folder...")
