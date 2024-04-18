@@ -200,11 +200,6 @@ def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000, c
     else:
         new_data["categories"] = data["categories"]
 
-    # Save image file_name in txt file
-    train_or_val = 'train' if 'train' in new_img_dir else 'val'
-    df_images_new['file_name'] = df_images_new['file_name'].apply(lambda x: os.path.splitext(x)[0])
-    df_images_new['file_name'].to_csv(f'../_data/fashionpedia/reduced_{train_or_val}_files.txt', sep='\t', index=False, header=False)
-    
     # Copy images to new folder
     os.makedirs(new_img_dir, exist_ok=True)
     print("Copying images to new folder...")
@@ -220,6 +215,11 @@ def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000, c
 
     print(f"New Image-dir size: {get_dir_size(new_img_dir)} ({new_img_dir})")
     
+    # Save image file_name in txt file
+    train_or_val = 'train' if 'train' in new_img_dir else 'val'
+    df_images_new['file_name'] = df_images_new['file_name'].apply(lambda x: os.path.splitext(x)[0])
+    df_images_new['file_name'].to_csv(f'../_data/fashionpedia-reduction/reduced_{train_or_val}_files.txt', sep='\t', index=False, header=False)
+    print("Saved image file names to txt file")
     # Save new data to json file
     save_json(new_json_file, new_data)
     print(f"New JSON file size: {os.path.getsize(new_json_file)/(1024**2):.2f}MB ({new_json_file})")
