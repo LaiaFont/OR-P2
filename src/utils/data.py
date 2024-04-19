@@ -224,7 +224,6 @@ def reduce_data(json_file, img_dir, new_img_dir, new_json_file, n_choice=1000, c
 def generate_masked_imgs(fp, save_dir, palette, convert_3D=True, n_images=None):
     """Generate segmentation masks for each category in the dataset."""
     
-    
     im_ids = fp.getImgIds()
     if n_images is not None:
         im_ids = im_ids[:n_images]
@@ -235,10 +234,9 @@ def generate_masked_imgs(fp, save_dir, palette, convert_3D=True, n_images=None):
     os.makedirs(save_dir, exist_ok=True)
 
     # Get annotations IDs for each image 
-    d3 = True
     for im_id in im_ids:
         ann_ids = np.array(fp.getAnnIds(imgIds=im_id))
-                
+        
         # Create a list of category IDs for each annotation
         cat_ids = []
         for i in ann_ids:
@@ -271,7 +269,8 @@ def generate_masked_imgs(fp, save_dir, palette, convert_3D=True, n_images=None):
             for cat in np.unique(mask):
                 mask3d[mask == cat] = palette[cat]
             mask = mask3d
-                
+
+
         # Save the mask to PNG file in the 'ann_dir' directory
         filename = os.path.join(save_dir, fp.imgs[im_id]['file_name'].split('.')[0]+'_seg.png')
         if not cv2.imwrite(filename, mask):
