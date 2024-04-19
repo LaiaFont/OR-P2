@@ -140,10 +140,28 @@ def imshow_many(imgs, axis_off=True, cols=1, rows=1):
     fig, axs = plt.subplots(rows, cols, figsize=(cols*5, rows*3))
     
     for ax, img in zip(axs.flatten(), imgs):
-        imshow(*img, ax=ax) if isinstance(img, tuple) else imshow(img, ax=ax)
+        
+        print(img.shape)
+        
+        imshow(*img, ax=ax, axis_off=axis_off) if isinstance(img, tuple) else imshow(img, ax=ax, axis_off=axis_off)
         ax.axis('off') if axis_off else None
     
     fig.tight_layout()
+
+
+def mask_to_3D(mask, palette):
+        
+    # Extend the mask to 3D
+    if len(mask.shape) == 3:
+        mask = mask[:, :, 0]
+    mask3d = np.zeros(shape=(*mask.shape[:2], 3), dtype=np.uint8)
+    
+    # For each category in the mask, assign the corresponding color
+    for cat in np.unique(mask):
+        mask3d[mask == cat] = palette[cat]
+    
+    return mask3d
+                
 
 def mask_resize(img, instance_pixels, resize_factor=1, instance_color=None):
     """Convert all non-instance pixels to black and resize the image"""
