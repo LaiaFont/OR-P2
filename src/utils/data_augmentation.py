@@ -22,12 +22,12 @@ def log(log):
     
 
 
-
-def voc_data_augmentation(tar_img, tar_seg, voc_img_dir, voc_seg_dir, cover_factor=0.8):
+def voc_data_augmentation(tar_img, tar_seg, voc_img_dir, voc_seg_dir, cover_factor=0.8, verbose=False):
+    
     """Data augmentation using VOC dataset"""
     
     tar_shape = tar_seg.shape    
-    log("Get Fashion image/segmentation, shape: "+ str(tar_shape))
+    log("Get Fashion image/segmentation, shape: "+ str(tar_shape)) if verbose else None
 
 
     # ====================================================================================================
@@ -35,12 +35,12 @@ def voc_data_augmentation(tar_img, tar_seg, voc_img_dir, voc_seg_dir, cover_fact
     # voc_img, voc_seg, voc_id = get_voc_img(voc_bus, voc_img_dir, voc_ins_seg)
     sou_img, sou_seg, voc_id = get_random_voc_img(voc_img_dir, voc_seg_dir, plot_true=False) 
     # sou_img, sou_seg = voc_img, voc_seg
-    log("Get VOC image/segmentation, shape: " + str(sou_seg.shape))
+    log("Get VOC image/segmentation, shape: " + str(sou_seg.shape)) if verbose else None
 
     
     # ====================================================================================================
     # 2. Select Instance + Region
-    log("Filter VOC instance")
+    log("Filter VOC instance") if verbose else None
     ins_seg = filter_color(sou_seg, filter_color=(255,255,255))
     ins_seg_gray = cv2.cvtColor(ins_seg, cv2.COLOR_BGR2GRAY)
 
@@ -52,21 +52,21 @@ def voc_data_augmentation(tar_img, tar_seg, voc_img_dir, voc_seg_dir, cover_fact
 
     # Randomly define resize_factor
     h, w = sou_bbox[2]-sou_bbox[0], sou_bbox[3]-sou_bbox[1]
-    log("bbox: " + str(sou_bbox) + " h: " + str(h) + " w: " + str(w))
+    log("bbox: " + str(sou_bbox) + " h: " + str(h) + " w: " + str(w)) if verbose else None
     fy = tar_shape[0] / h
     fx = tar_shape[1] / w
 
     resize_factor = min(fy, fx)*cover_factor # => Cover 80% of the target image
-    log("Resize factor: " + str(fy) + " " + str(fx) + " " + str(resize_factor))
+    log("Resize factor: " + str(fy) + " " + str(fx) + " " + str(resize_factor)) if verbose else None
     dsize=(int(w*resize_factor), int(h*resize_factor))
 
-    log("Crop/Resize VOC instance" + str(ins_seg.shape))
+    log("Crop/Resize VOC instance" + str(ins_seg.shape)) if verbose else None
     
     ins_seg = crop_resize(ins_seg, sou_bbox, dsize)
     ins_seg_gray = crop_resize(ins_seg_gray, sou_bbox, dsize)
     ins_img = crop_resize(ins_img, sou_bbox, dsize)
 
-    log("Crop/Resize VOC instance" + str(ins_seg.shape))
+    log("Crop/Resize VOC instance" + str(ins_seg.shape)) if verbose else None
     # - (optional) random rotation (not implemented)
 
     # ====================================================================================================
@@ -88,15 +88,17 @@ def voc_data_augmentation(tar_img, tar_seg, voc_img_dir, voc_seg_dir, cover_fact
     final_seg = cv2.bitwise_and(tar_seg, inverse_mask)
     final_img = tar_img.copy()
     final_img[y:y+h, x:x+w] = cv2.add(tar_img_prep[y:y+h, x:x+w], ins_img)
-
+    
+    final_seg = final_seg[:, :, 0]
     
     return tar_img, tar_seg, sou_img, sou_seg, final_img, final_seg
+
+    
     # images = zip([tar_img, tar_seg, 
     #         sou_img, sou_seg, 
     #         ins_seg, ins_seg_gray, ins_img, tar_mask, inverse_mask, tar_img_prep, final_img, final_seg],
     #         ["Fashion IMG", "Fashion Segmentation", "VOC IMG", "VOC segmentation", 
     #         "Instance seg.", "Instance seg.", "Instance IMG", "tar_mask", "inverse_mask", "tar_img_prep", "Final IMG", "Final seg."])
-
 
     # log("Plot")
     # imshow_many(images, cols=3, rows=4, axis_off=False)
